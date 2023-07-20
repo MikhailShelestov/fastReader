@@ -2,17 +2,120 @@
 
 {% block title %}Hello ReaderController!{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="{{ asset('css/main.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <div class="example-wrapper">
+        <h1>Вот это страница для чтения✅</h1>
+{#        TODO move spot/start state to some other place #}
+        <input class="stop" type="hidden" value="stopped">
 
-<div class="example-wrapper">
-    <h1>Вот это страница для чтения✅</h1>
+        <form>
+            <div class="row">
+                <div class="readerField"></div>
+            </div>
 
-{#    text - это переменная, в которой нахожится массив текста. Никаких запросов делать не нужно, всё уже будет здесь.#}
-    {{ dump(text) }}
+            <button class="btn  btn-info back btn-sm" value="read" name="read" type="button">10 words back</button>
+            <button class="btn btn-info startReading  btn-sm" value="read" name="read" type="button">
+                start / continue
+            </button>
+            <button class="btn btn-info stopReading  btn-sm" value="read" name="read" type="button">stop</button>
+            <button class="btn  btn-info forward  btn-sm" value="read" name="read" type="button">
+                10 words forward
+            </button>
 
-</div>
+            <div class="row">
+                <label>Words per minute speed: <input class="delayTime" type="number" value="200"></label>
+            </div>
+
+        </form>
+    </div>
+
+
+    <script type="text/javascript">
+      let readerField = $('.readerField');
+      let delayTimeField = $('.delayTime');
+      let words = JSON.parse('{{ text | json_encode | raw }}');
+
+      words['cursor'] = 0;
+
+      words['delay'] = 60 / delayTimeField.val() * 1000;
+
+      readerField.text(words[0]);
+
+      delayTimeField.on('keyup keypress', function(e) {
+        let keyCode = e.keyCode || e.which;
+        if (keyCode === 13) {
+          e.preventDefault();
+          words['delay'] = 60 / delayTimeField.val() * 1000;
+        }
+      });
+
+      // TODO move everything to its own separate function. Add quantification for long and short words
+
+      delayTimeField.on('change', function () {
+        words['delay'] = 60 / delayTimeField.val() * 1000;
+      });
+
+      $('.startReading').on('click', function () {
+        startReading();
+        readOneWord(400, words);
+      });
+
+      $('.stopReading').on('click', function () {
+        stopReading();
+      });
+
+      $('.back').on('click', function () {
+        stopReading();
+
+        words['cursor'] = words['cursor'] > 10 ? words['cursor'] - 10 : 0;
+        let previousWord = words[words['cursor']];
+        readerField.text(previousWord);
+      });
+
+      $('.forward').on('click', function () {
+        stopReading();
+
+        words['cursor'] += 10;
+        let nextWord = words[words['cursor']] ?? words[words.length - 1];
+        readerField.text(nextWord);
+      });
+
+      function readOneWord(delayTime, words) {
+        if (checkReadingIsStopped()) {
+          return;
+        }
+
+        let firstWord = words[words['cursor']];
+        readerField.text(firstWord);
+
+        words['cursor'] += 1;
+
+        if (words['cursor'] < words.length) {
+          setTimeout(() => {
+              readOneWord(words['delay'], words);
+            }
+            , delayTime);
+        }
+      }
+
+      function startReading() {
+        $('.stop').val('started');
+        $('.startReading').attr('disabled', true);
+      }
+
+      function stopReading() {
+        $('.stop').val('stopped');
+        $('.startReading').attr('disabled', false);
+      }
+
+      function checkReadingIsStopped() {
+        let res = $('.stop').val();
+        return res === 'stopped';
+      }
+    </script>
 {% endblock %}

@@ -3,18 +3,22 @@
 {% block title %}Hello DownloadFileController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <div class="card">
+        <div class="card-content collapse show">
+            <div class="card-body">
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/home/mshel/PhpstormProjects/reader/src/Controller/DownloadFileController.php'|file_link(0) }}">src/Controller/DownloadFileController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/home/mshel/PhpstormProjects/reader/templates/download_file/index.html.twig'|file_link(0) }}">templates/download_file/index.html.twig</a></code></li>
-    </ul>
-</div>
+                {% if (fileUploaded) %}
+                    <p class="alert-success">File downloaded</p>
+                {% endif %}
+
+                {% form_theme form 'bootstrap_5_layout.html.twig' %}
+                {{ form_start(form, {
+                    'method': 'POST',
+                }) }}
+                {{ form_widget(form) }}
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}
